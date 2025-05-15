@@ -31,41 +31,52 @@
 <body>
   <h1>TONConnect Тест</h1>
   <p>Нажмите кнопку ниже, чтобы получить тестовый запрос на подтверждение перевода.</p>
-  <button onclick="sendTestRequest()">Получить тестовый запрос</button>
+  <button id="payButton" disabled>Получить тестовый запрос</button>
 
   <!-- TonConnect SDK -->
   <script src="https://unpkg.com/ @tonconnect/sdk"></script>
   <script>
-    const connector = new window.tonconnectSDK.TonConnect();
+    document.addEventListener("DOMContentLoaded", async function () {
+      // Ждём, пока TonConnect SDK загрузится
+      if (window.tonconnectSDK) {
+        const connector = new window.tonconnectSDK.TonConnect();
 
-    async function sendTestRequest() {
-      // Пример адреса получателя в Testnet
-      const receiverAddress = 'kQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N';
+        // Проверяем подключение к кошелькам
+        try {
+          await connector.restoreConnection();
+        } catch (e) {
+          console.log('Подключение не восстановлено:', e);
+        }
 
-      // Сумма в nanoton (0.1 TON)
-      const amountNano = '1000000';
+        document.getElementById('payButton').disabled = false;
+        document.getElementById('payButton').onclick = async function () {
+          const receiverAddress = 'kQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'; // Testnet
+          const amountNano = '1000000'; // 0.1 TON
+          const validUntil = Math.floor(Date.now() / 1000) + 300; // 5 минут
 
-      // Время жизни запроса (в ближайшие 5 минут)
-      const validUntil = Math.floor(Date.now() / 1000) + 300;
+          const transaction = {
+            valid_until: validUntil,
+            messages: [
+              {
+                address: receiverAddress,
+                amount: amountNano
+              }
+            ]
+          };
 
-      const transaction = {
-        valid_until: validUntil,
-        messages: [
-          {
-            address: receiverAddress,
-            amount: amountNano
+          try {
+            const requestLink = await connector.sendTransaction(transaction);
+            console.log('Запрос отправлен:', requestLink);
+          } catch (err) {
+            alert('Ошибка при отправке запроса: ' + err.message);
+            console.error('Ошибка:', err);
           }
-        ]
-      };
-
-      try {
-        const requestLink = await connector.sendTransaction(transaction);
-        console.log('Запрос отправлен:', requestLink);
-      } catch (err) {
-        alert('Ошибка при отправке запроса: ' + err.message);
-        console.error('Ошибка:', err);
+        };
+      } else {
+        alert('TonConnect SDK не загрузился');
+        console.error('TonConnect SDK не найден');
       }
-    }
+    });
   </script>
 </body>
 </html>
