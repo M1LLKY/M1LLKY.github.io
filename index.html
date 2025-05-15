@@ -1,55 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>OpenMask Send TON Example</title>
+  <title>OpenMask Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-  <h1>Send Test TON via OpenMask</h1>
+
+  <h1>Отправка тестовых TON через OpenMask</h1>
   <button onclick="connect()">Подключиться к OpenMask</button>
-  <button onclick="sendTransaction()">Отправить TON</button>
+  <button onclick="send()">Отправить транзакцию</button>
+  <pre id="log"></pre>
 
   <script>
     async function connect() {
+      const log = document.getElementById('log');
+      log.textContent = '';
+
       if (!window.openmask) {
-        alert("OpenMask не установлен");
+        log.textContent = '❌ OpenMask не установлен';
         return;
       }
 
       try {
-        const accounts = await window.openmask.request({
+        const accounts = await window.openmask.provider.request({
           method: 'ton_requestAccounts'
         });
-        alert("Подключённый аккаунт: " + accounts[0]);
-      } catch (err) {
-        console.error(err);
-        alert("Ошибка подключения");
+        log.textContent = '✅ Аккаунт подключен:\n' + accounts[0];
+      } catch (e) {
+        log.textContent = '❌ Ошибка подключения:\n' + e.message;
       }
     }
 
-    async function sendTransaction() {
+    async function send() {
+      const log = document.getElementById('log');
+      log.textContent = '';
+
       if (!window.openmask) {
-        alert("OpenMask не установлен");
+        log.textContent = '❌ OpenMask не установлен';
         return;
       }
 
-      const recipientAddress = prompt("Введите адрес получателя:");
-      const amountNanoTon = prompt("Введите сумму в nanoTON (например, 1000000000 = 1 TON):");
+      const to = prompt("Введите адрес получателя:");
+      const amount = prompt("Введите сумму в nanoTON (например, 1000000000 = 1 TON):");
 
       try {
-        const result = await window.openmask.request({
+        const result = await window.openmask.provider.request({
           method: 'ton_sendTransaction',
           params: [{
-            to: recipientAddress,
-            value: amountNanoTon,
+            to,
+            value: amount,
             data: ''
           }]
         });
 
-        alert("Транзакция отправлена: " + result);
-      } catch (err) {
-        console.error(err);
-        alert("Ошибка при отправке транзакции");
+        log.textContent = '✅ Транзакция отправлена:\n' + JSON.stringify(result, null, 2);
+      } catch (e) {
+        log.textContent = '❌ Ошибка при отправке:\n' + e.message;
       }
     }
   </script>
