@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenMask Send TON Example</title>
+</head>
+<body>
+  <h1>Send Test TON via OpenMask</h1>
+  <button onclick="connect()">Подключиться к OpenMask</button>
+  <button onclick="sendTransaction()">Отправить TON</button>
 
+  <script>
+    async function connect() {
+      if (!window.openmask) {
+        alert("OpenMask не установлен");
+        return;
+      }
+
+      try {
+        const accounts = await window.openmask.request({
+          method: 'ton_requestAccounts'
+        });
+        alert("Подключённый аккаунт: " + accounts[0]);
+      } catch (err) {
+        console.error(err);
+        alert("Ошибка подключения");
+      }
+    }
+
+    async function sendTransaction() {
+      if (!window.openmask) {
+        alert("OpenMask не установлен");
+        return;
+      }
+
+      const recipientAddress = prompt("Введите адрес получателя:");
+      const amountNanoTon = prompt("Введите сумму в nanoTON (например, 1000000000 = 1 TON):");
+
+      try {
+        const result = await window.openmask.request({
+          method: 'ton_sendTransaction',
+          params: [{
+            to: recipientAddress,
+            value: amountNanoTon,
+            data: ''
+          }]
+        });
+
+        alert("Транзакция отправлена: " + result);
+      } catch (err) {
+        console.error(err);
+        alert("Ошибка при отправке транзакции");
+      }
+    }
+  </script>
+</body>
+</html>
